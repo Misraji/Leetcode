@@ -34,8 +34,8 @@ pair<bool, bool> Solution::bitSum(bool a, bool b, bool c) {
 
 	} else {
 		// Add c to sum;
+		carry = sum && c;
 		sum = sum ^ c;
-		carry = sum & c;
 	}
 
 	return pair<bool, bool>(sum, carry);
@@ -49,7 +49,7 @@ int Solution::getSum(int a, int b) {
 
 	int i = 0;
 
-	while (a || b) {
+	while (a || b || c) {
 		val1 = a & 1;
 		val2 = b & 1;
 
@@ -64,14 +64,16 @@ int Solution::getSum(int a, int b) {
 		i++;
 	}
 
-	result |= (c << i);
 	return result;
 }
 
 int main(int argc, const char **argv) {
 
 	Solution adder;
-
+	
+	int sum = adder.getSum(1,3);
+	cout << "1 + 3 = " << sum << endl;
 	cout << "1 + 2 = " << adder.getSum(1,2) << endl;
 	cout << "5 + 10 = " << adder.getSum(5,10) << endl;
+	cout << "11 + 10 = " << adder.getSum(10,11) << endl;
 }
