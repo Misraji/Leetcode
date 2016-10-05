@@ -1,6 +1,8 @@
-SRC_DIR=src/
-BUILD_DIR=build/
-INCL_DIR=include/
+SRC_DIR=src
+ACCEPTED_DIR=$(SRC)/accepted
+INCOMPLETE_SRC_DIR=$(SRC)/incomplete
+BUILD_DIR=build
+INCL_DIR=include
 
 #==============================================================================
 
@@ -13,7 +15,7 @@ CFLAGS=-Wall -g -ggdb -O3 $(INCLUDE_FLAGS)
 #==============================================================================
 
 SRC_FILES := $(shell find $(SRC_DIR) -name '*.$(CPP_EXT)')
-PROG_FILES := $(patsubst $(SRC_DIR)/%.$(CPP_EXT),%,$(SRC_FILES))
+PROG_FILES := $(patsubst %.$(CPP_EXT),%,$(SRC_FILES))
 
 # 1.  Get all directory names from source files
 # 2.  Sort the names to get all unique names.
@@ -23,7 +25,7 @@ SRC_DIRS := $(sort $(DIR_NAMES))
 #==============================================================================
 .PHONY: make_dirs clean
 
-all: $(PROG_FILES)
+all: make_dirs $(PROG_FILES)
 
 make_dirs:
 	$(call make-repo)
@@ -31,7 +33,7 @@ make_dirs:
 clean:
 	rm -rf $(BUILD_DIR)/*
 
-% : $(SRC_DIR)/%.$(CPP_EXT)
+% : %.$(CPP_EXT)
 	$(CC) $(CFLAGS) $< -o $(BUILD_DIR)/$@
 
 #==============================================================================
