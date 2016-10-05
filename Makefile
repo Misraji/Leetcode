@@ -10,7 +10,7 @@ CC=g++
 CPP_EXT=cpp
 
 INCLUDE_FLAGS=
-CFLAGS=-Wall -g -ggdb -O3 $(INCLUDE_FLAGS)
+CFLAGS= -std=c++11 -Wall -g -ggdb -O3 $(INCLUDE_FLAGS) 
 
 #==============================================================================
 
