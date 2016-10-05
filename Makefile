@@ -32,6 +32,7 @@ make_dirs:
 
 clean:
 	rm -rf $(BUILD_DIR)/*
+	$(call make-repo)
 
 % : %.$(CPP_EXT)
 	$(CC) $(CFLAGS) $< -o $(BUILD_DIR)/$@
