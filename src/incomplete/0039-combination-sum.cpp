@@ -15,6 +15,9 @@ using std::copy;
 #include <map>
 using std::map;
 
+#include <set>
+using std::set;
+
 #include <iterator>
 using std::back_inserter;
 using std::ostream_iterator;
@@ -29,20 +32,20 @@ class Solution {
 
 	private:
 		void findCombination(vector<int>& candidates, int target, 
-				map<int, vector<vector<int> > > &solution_map) ;
+				map<int, set<vector<int> > > &solution_map) ;
 
 };
 
 void Solution::findCombination(vector<int>& candidates, int target, 
-	map<int, vector<vector<int> > > &solution_map) {
+	map<int, set<vector<int> > > &solution_map) {
 
 	//	End of recursion.
 	if (solution_map.count(target) > 0) {
 		return ;
 	}
 
-	solution_map.insert(make_pair(target, vector<vector<int> >() ));
-	vector<vector<int> > &result = solution_map[target];
+	solution_map.insert(make_pair(target, set<vector<int> >() ));
+	set<vector<int> > &result = solution_map[target];
 
 	for(auto itr = candidates.begin(); itr != candidates.end(); ++itr) {
 	
@@ -57,20 +60,21 @@ void Solution::findCombination(vector<int>& candidates, int target,
 			int new_target = (target - *itr);
 			// Recursion call with smaller target value;
 			findCombination(candidates, new_target, solution_map);
-			vector<vector<int> > &new_solution = solution_map[new_target];
+			set<vector<int> > &new_solution = solution_map[new_target];
 		
 			// TODO: What if no solution could be found of the new_target
 			// Is that correctly handled here??
 
-			for(int i=0; i < new_solution.size(); i++ ) {
+			for(auto set_itr = new_solution.begin(); set_itr != new_solution.end(); set_itr++ ) {
 					
-				vector<int> &new_curr_sol = new_solution[i];
+				const vector<int> &new_curr_sol = *set_itr;
 				vector<int> result_mem;
 
 				result_mem.push_back(*itr);
 				copy(new_curr_sol.begin(), new_curr_sol.end(), back_inserter(result_mem));
 
-				result.push_back(result_mem);
+				sort(result_mem.begin(), result_mem.end());
+				result.insert(result_mem);
 			}	
 
 			
@@ -78,7 +82,7 @@ void Solution::findCombination(vector<int>& candidates, int target,
 			
 			vector<int> solution;
 			solution.push_back(target);
-			result.push_back(solution) ;
+			result.insert(solution) ;
 
 		} else {
 			// Rest of the elements are bigger than the target element.
@@ -91,11 +95,13 @@ void Solution::findCombination(vector<int>& candidates, int target,
 
 vector<vector<int> > Solution::combinationSum(vector<int>& candidates, int target) {
 
-	map<int, vector<vector<int> > > solution_map;
+	map<int, set<vector<int> > > solution_map;
 	sort(candidates.begin(), candidates.end());
 
 	findCombination(candidates, target, solution_map);
-	return solution_map[target];
+
+	set<vector<int > > &result = solution_map[target];
+	return vector<vector<int > >(result.begin(), result.end());
 }
 
 int main(int argc, const char **argv) {
