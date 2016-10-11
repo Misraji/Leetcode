@@ -111,16 +111,56 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws, bool trail_
 		return false;
 	}
 
-	// Verify first part is an integer.
-	// Note that we allow leading space, but NOT trailing space.
-	bool full_int = isInteger(s, start, dec_pos, lead_ws, false);
+	bool leading_dec = false;
+	bool trailing_dec = false;
 
-	// Verify second part is an integer.
+	// Check if whitespace and decimal are the leading characters
+	for (int i = start; i < end; i++) {
+		char c = s[i];
+
+		if ( isspace(c)) {
+			// expected. continue
+			
+		} else if (c == '.') {
+			leading_dec = true;
+			break;
+
+		} else {
+			break;
+		}
+	}
+
+	// Check if whitespace and decimal are the trailing
+	int idx = dec_pos+1;
+	for ( ; idx < end; idx++) {
+		char c = s[idx];
+
+		if ( isspace(c)) {
+			// expected. continue
+		} else {
+			break;
+		}
+	}
+
+	if (idx == end) {
+		trailing_dec = true;
+	}
+
+	// Note that there must be ATLEAST one integer number.
+	if (leading_dec && trailing_dec) {
+		return false;
+	}
+
+	// Verify first part is either empty or an integer.
+	// Note that we allow leading space, but NOT trailing space.
+	bool valid_whole = leading_dec || isInteger(s, start, dec_pos, lead_ws, false);
+
+	// Verify second part is either empty or integer.
 	// TODO: Is this condition right?? Is just whitespace ok??
 	// NOTE that we disallow both leading and trailing space.
-	bool fraction_int = isInteger(s, (dec_pos+1), end, false, trail_ws);
+	bool valid_fraction = trailing_dec || isInteger(s, (dec_pos+1), end, false, trail_ws);
 
-	return (full_int && fraction_int);
+	return (valid_whole && valid_fraction);
 }
 
 bool Solution::isExponent(string s) {
@@ -239,6 +279,11 @@ int main(int argc, const char **argv) {
 	cout << "isNumber(11.00) = " << ans.isNumber("11.00") << endl;
 	cout << "isNumber( 11.00 ) = " << ans.isNumber(" 11.00 ") << endl;
 	cout << "isNumber(.1100) = " << ans.isNumber(".1100") << endl;
+	cout << "isNumber(   .1100) = " << ans.isNumber("  .1100") << endl;
+	cout << "isNumber(.1100   ) = " << ans.isNumber(".1100  ") << endl;
+	cout << "isNumber(1100.) = " << ans.isNumber("1100.") << endl;
+	cout << "isNumber(1100.  ) = " << ans.isNumber("1100.  ") << endl;
+	cout << "isNumber(   .  ) = " << ans.isNumber("   .  ") << endl;
 	cout << "isNumber(11.) = " << ans.isNumber("11.") << endl;
 	cout << "isNumber(11.00.) = " << ans.isNumber("11.00.") << endl;
 	cout << "isNumber(x11.00) = " << ans.isNumber("x11.00") << endl;
@@ -262,4 +307,6 @@ int main(int argc, const char **argv) {
 	// TODO: Decimal exponent checks.
 	cout << endl << "Decimal Exponent Checks" << endl;
 	cout << "isNumber(1.0E1) = " << ans.isNumber("1.0E1") << endl;
+	cout << "isNumber(.0E1) = " << ans.isNumber(".0E1") << endl;
+	cout << "isNumber(1.E1) = " << ans.isNumber("1.E1") << endl;
 }
