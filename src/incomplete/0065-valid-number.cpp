@@ -18,13 +18,16 @@ class Solution {
 		bool isNumber(string s);
 
 	private:
-		bool isInteger(string, int start, int end, bool lead_ws, bool trail_ws);
-		bool isDecimal(string, int start, int end, bool lead_ws, bool trail_ws);
+		bool isInteger(string, int start, int end, bool lead_ws, 
+				bool trail_ws, bool allow_sign);
+		bool isDecimal(string, int start, int end, bool lead_ws, 
+				bool trail_ws, bool allow_sign);
 		bool isExponent(string);
 		bool isDecimalExponent(string);
 };
 
 typedef enum {
+	has_sign,
 	has_exponent,
 	has_alphabet,	
 	has_decimal,
@@ -33,7 +36,8 @@ typedef enum {
 } c_types ;
 
 
-bool Solution::isInteger(string s, int start, int end, bool lead_ws, bool trail_ws) {
+bool Solution::isInteger(string s, int start, int end, bool lead_ws, 
+		bool trail_ws, bool allow_sign) {
 
 	int i = start;
 	bool found_digit = false;
@@ -48,6 +52,10 @@ bool Solution::isInteger(string s, int start, int end, bool lead_ws, bool trail_
 		} else if (isdigit(c)) {
 			break;
 
+		} else if (allow_sign && 
+					((c == '+') || (c == '-')) ){ 
+			break;
+
 		} else {
 			// Not expecting any other character. Return false.
 			return false;
@@ -58,6 +66,10 @@ bool Solution::isInteger(string s, int start, int end, bool lead_ws, bool trail_
 	// false.
 	if (!lead_ws && (i != start)) {
 		return false;
+	}
+
+	if ((s[i] == '+') || (s[i] == '-') ) {
+		i++;
 	}
 
 	// Make sure that next set of characters is an integer.
@@ -102,7 +114,8 @@ bool Solution::isInteger(string s, int start, int end, bool lead_ws, bool trail_
 	return found_digit;
 }
 
-bool Solution::isDecimal(string s, int start, int end, bool lead_ws, bool trail_ws) {
+bool Solution::isDecimal(string s, int start, int end, bool lead_ws, 
+		bool trail_ws, bool allow_sign) {
 
 	int dec_pos = s.find_first_of('.', start);
 
@@ -113,20 +126,44 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws, bool trail_
 
 	bool leading_dec = false;
 	bool trailing_dec = false;
+	bool sign_seen = false;
 
 	// Check if whitespace and decimal are the leading characters
 	for (int i = start; i < end; i++) {
 		char c = s[i];
 
-		if ( isspace(c)) {
-			// expected. continue
-			
-		} else if (c == '.') {
-			leading_dec = true;
-			break;
+		if (sign_seen) {
+			// Once the sign has been encountered, only . and digits 
+			// are further allowed.
+			if (c == '.') {
+				leading_dec = true;
+				break;
+
+			} else if (isdigit(c)){
+				break;
+
+			} else {
+				return false;
+			}
 
 		} else {
-			break;
+
+			// We havent encountered any sign so far.
+			if ( isspace(c)) {
+				// expected. continue.
+			
+			} else if (allow_sign && 
+					((c == '+') || (c == '-'))) {
+				// sign symbols are allowed. continue.
+				sign_seen = true;
+			
+			} else if (c == '.') {
+				leading_dec = true;
+				break;
+
+			} else {
+				break;
+			}
 		}
 	}
 
@@ -153,12 +190,12 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws, bool trail_
 
 	// Verify first part is either empty or an integer.
 	// Note that we allow leading space, but NOT trailing space.
-	bool valid_whole = leading_dec || isInteger(s, start, dec_pos, lead_ws, false);
+	bool valid_whole = leading_dec || isInteger(s, start, dec_pos, lead_ws, false, allow_sign);
 
 	// Verify second part is either empty or integer.
 	// TODO: Is this condition right?? Is just whitespace ok??
 	// NOTE that we disallow both leading and trailing space.
-	bool valid_fraction = trailing_dec || isInteger(s, (dec_pos+1), end, false, trail_ws);
+	bool valid_fraction = trailing_dec || isInteger(s, (dec_pos+1), end, false, trail_ws, false);
 
 	return (valid_whole && valid_fraction);
 }
@@ -171,8 +208,8 @@ bool Solution::isExponent(string s) {
 		return false;
 	}
 
-	bool mantissa_int = isInteger(s, 0, exponent_pos, true, false);
-	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true);
+	bool mantissa_int = isInteger(s, 0, exponent_pos, true, false, true);
+	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true, false);
 
 	return (mantissa_int && exponent_int);
 }
@@ -185,8 +222,9 @@ bool Solution::isDecimalExponent(string s) {
 		return false;
 	}
 
-	bool mantissa_decimal = isDecimal(s, 0, exponent_pos, true, false);
-	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true);
+	// Note that we allow sign in the exponent as well.
+	bool mantissa_decimal = isDecimal(s, 0, exponent_pos, true, false, true);
+	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true, true);
 
 	return (mantissa_decimal && exponent_int);
 }
@@ -217,6 +255,10 @@ bool Solution::isNumber(string s) {
 		} else if (c == '.') {
 			type_set.insert(has_decimal);
 
+		} else if ((c == '+') || (c == '-')) {
+			// Sign characters are allowed.
+			type_set.insert(has_sign);
+
 		} else if (isspace(c)) {
 			// Skip whitespace (since leading and trailing whitespace are ok)
 
@@ -240,11 +282,11 @@ bool Solution::isNumber(string s) {
 		result = isExponent(s);
 
 	} else if (type_set.count(has_decimal)) {
-		result = isDecimal(s, 0, s.size(), true, true);
+		result = isDecimal(s, 0, s.size(), true, true, true);
 
 	} else {
 		// Must be an integer;
-		result = isInteger(s, 0, s.size(), true, true);
+		result = isInteger(s, 0, s.size(), true, true, true);
 	}
 
 	// Determine type of number and perform checks based on type
@@ -262,7 +304,12 @@ int main(int argc, const char **argv) {
 
 	// Integer checks.
 	cout << endl << "Integer checks" << endl;
+	cout << "isNumber(+) = " << ans.isNumber("+") << endl;
 	cout << "isNumber(1) = " << ans.isNumber("1") << endl;
+	cout << "isNumber(+1) = " << ans.isNumber("+1") << endl;
+	cout << "isNumber(+ 1) = " << ans.isNumber("+ 1") << endl;
+	cout << "isNumber(-1) = " << ans.isNumber("-1") << endl;
+	cout << "isNumber(- 1) = " << ans.isNumber("- 1") << endl;
 	cout << "isNumber(11) = " << ans.isNumber("11") << endl;
 	cout << "isNumber( 11) = " << ans.isNumber(" 11") << endl;
 	cout << "isNumber(11 ) = " << ans.isNumber("11 ") << endl;
@@ -278,7 +325,13 @@ int main(int argc, const char **argv) {
 	cout << "isNumber(11.0) = " << ans.isNumber("11.0") << endl;
 	cout << "isNumber(11.00) = " << ans.isNumber("11.00") << endl;
 	cout << "isNumber( 11.00 ) = " << ans.isNumber(" 11.00 ") << endl;
+	cout << "isNumber( +11.00 ) = " << ans.isNumber(" +11.00 ") << endl;
+	cout << "isNumber( -11.00 ) = " << ans.isNumber(" -11.00 ") << endl;
 	cout << "isNumber(.1100) = " << ans.isNumber(".1100") << endl;
+	cout << "isNumber(+.1100) = " << ans.isNumber("+.1100") << endl;
+	cout << "isNumber(-.1100) = " << ans.isNumber("-.1100") << endl;
+	cout << "isNumber( + .1100) = " << ans.isNumber(" + .1100") << endl;
+	cout << "isNumber( - .1100) = " << ans.isNumber(" - .1100") << endl;
 	cout << "isNumber(   .1100) = " << ans.isNumber("  .1100") << endl;
 	cout << "isNumber(.1100   ) = " << ans.isNumber(".1100  ") << endl;
 	cout << "isNumber(1100.) = " << ans.isNumber("1100.") << endl;
