@@ -126,6 +126,7 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws,
 
 	bool leading_dec = false;
 	bool trailing_dec = false;
+	bool trailing_ws = false;
 	bool sign_seen = false;
 
 	// Check if whitespace and decimal are the leading characters
@@ -174,6 +175,8 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws,
 
 		if ( isspace(c)) {
 			// expected. continue
+			trailing_ws = true;
+
 		} else {
 			break;
 		}
@@ -181,6 +184,11 @@ bool Solution::isDecimal(string s, int start, int end, bool lead_ws,
 
 	if (idx == end) {
 		trailing_dec = true;
+	}
+
+	// Check if we are allowed to have whitespace after decimal
+	if (!trail_ws && trailing_ws) {
+		return false;
 	}
 
 	// Note that there must be ATLEAST one integer number.
@@ -209,7 +217,7 @@ bool Solution::isExponent(string s) {
 	}
 
 	bool mantissa_int = isInteger(s, 0, exponent_pos, true, false, true);
-	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true, false);
+	bool exponent_int = isInteger(s, (exponent_pos + 1) , s.size(), false, true, true);
 
 	return (mantissa_int && exponent_int);
 }
@@ -355,11 +363,13 @@ int main(int argc, const char **argv) {
 	cout << "isNumber( 11e 11 ) = " << ans.isNumber(" 11e 11 ") << endl;
 	cout << "isNumber( 11e1x1 ) = " << ans.isNumber(" 11e1x1 ") << endl;
 	cout << "isNumber( x 11e11 ) = " << ans.isNumber(" x 11e11 ") << endl;
-	
+	cout << "isNumber( 005047e+6) = " << ans.isNumber(" 005047e+6") << endl;	
 	
 	// TODO: Decimal exponent checks.
 	cout << endl << "Decimal Exponent Checks" << endl;
 	cout << "isNumber(1.0E1) = " << ans.isNumber("1.0E1") << endl;
 	cout << "isNumber(.0E1) = " << ans.isNumber(".0E1") << endl;
 	cout << "isNumber(1.E1) = " << ans.isNumber("1.E1") << endl;
+	cout << "isNumber(1 .E1) = " << ans.isNumber("1 .E1") << endl;
+	cout << "isNumber(1. E1) = " << ans.isNumber("1. E1") << endl;
 }
