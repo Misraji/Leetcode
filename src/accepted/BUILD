@@ -5,6 +5,7 @@ cc_library (
 		"00033-search-rotated-array.h",
 		"02488-remove-nodes.h",
 		"02491-equal-skill.h",
+		"02501-longest-square-streak.h",
 		"02517-candy-basket.h",
 		"02526-data-stream.h",
 	],
@@ -13,6 +14,7 @@ cc_library (
 		"00033-search-rotated-array.cpp",
 		"02488-remove-nodes.cpp",
 		"02491-equal-skill.cpp",
+		"02501-longest-square-streak.cpp",
 		"02517-candy-basket.cpp",
 		"02526-data-stream.cpp",
 	],
@@ -25,6 +27,7 @@ cc_test (
 		"00033-search-rotated-array_test.cpp",
 		"02488-remove-nodes_test.cpp",
 		"02491-equal-skill_test.cpp",
+		"02501-longest-square-streak_test.cpp",
 		"02517-candy-basket_test.cpp",
 		"02526-data-stream_test.cpp",
 	],
@@ -37,7 +40,7 @@ cc_test (
 cc_test (
 	name = "current_test",
 	srcs = [
-		"02526-data-stream_test.cpp",
+		"02501-longest-square-streak_test.cpp",
 	],
 	deps = [
 		":leetcode",
